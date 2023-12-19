@@ -1,6 +1,10 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto'); // Lägg till crypto-modulen
 const router = express.Router();
 const {checkLogin, addUser, checkEmail} = require('../controllers/accountsController.js');
+const secretKey = crypto.randomBytes(32).toString('hex');
+
 
 router.get('/', (req, res) => {
   // Här kan du skicka tillbaka en välkomstsida eller annan information
@@ -21,9 +25,15 @@ router.post('/login', (req, res) => {
       console.error(err);
       return res.status(500).json({ error: 'Error checking login credentials' });
     }
-    console.log(data)
 
-    res.json(data);
+    // Kontrollera om inloggningen var framgångsrik
+    if (data.success) {
+      const token = generateJWT(data.user); // Använd data.user här om det behövs
+      // Skicka bara success och message till klienten
+      return res.json({ success: data.success, message: data.message, token, user: data.user, role: data.role});
+    } else {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
   });
 });
 
@@ -75,9 +85,9 @@ router.post('/addLogin', (req, res) => {
   });
 });
 
-
-
-
-
+function generateJWT(user) {
+  const token = jwt.sign({ userId: user.id, email: user.email, role: user.accountType }, secretKey, { expiresIn: '1h' });
+  return token;
+}
 
 module.exports = router;

@@ -1,17 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const {getAllUniStudents, addUniStudentProfile, addHighschoolStudentProfile } = require('../controllers/studentsController.js');
+const imageFolder="http://10.0.2.2:3000/"
 
 router.get('/getStudents', (req, res) => {
 
-  getAllUniStudents((err, data) => {
+  getAllUniStudents((err, uniStudents) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ error: 'Error getting students' });
     }
-    console.log(data)
+    console.log(uniStudents)
 
-    res.json(data);
+    uniStudents.students.forEach(uniStudent => {
+      uniStudent.imagePath = imageFolder + uniStudent.imagePath;
+      uniStudent.ambassador = false
+
+    });
+    console.log(uniStudents)
+
+    res.json(uniStudents);
   });
 });
 

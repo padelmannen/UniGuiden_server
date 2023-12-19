@@ -38,7 +38,7 @@ function addHighschoolStudentProfile(email, name, birthdate, highschool, educati
       userid = row.id;
 
       // Använd samma id för att lägga till användaren i accountsDB
-      const stmt2 = accountsDB.prepare("INSERT INTO highschoolStudents (id, email, name, birtdate, highschool, education, city) VALUES (?, ?, ?, ?, ?, ?, ?)");
+      const stmt2 = accountsDB.prepare("INSERT INTO highschoolStudents (id, email, name, birthdate, highschool, education, city) VALUES (?, ?, ?, ?, ?, ?, ?)");
 
       stmt2.run(userid, email, name, birthdate, highschool, education, city, function (err) {
         if (err) {
@@ -53,21 +53,27 @@ function addHighschoolStudentProfile(email, name, birthdate, highschool, educati
 
 function getAllUniStudents(callback) {
   accountsDB.serialize(() => {
-    accountsDB.all("SELECT * FROM uniStudents", (err, rows) => {
+    const query = `
+      SELECT uniStudents.*, universities.name AS universityName
+      FROM uniStudents
+      LEFT JOIN universities ON uniStudents.universityID = universities.id
+    `;
+
+    accountsDB.all(query, (err, rows) => {
       if (err) {
         callback(err, null);
       } else {
         if (rows.length > 0) {
-          // Om det finns rader i resultatet, finns det studenter
+          // If there are rows in the result, return success and the student data
           callback(null, { success: true, students: rows });
         } else {
-          // Om resultatet är tomt, finns det inga studenter
+          // If the result is empty, return success and an empty array
           callback(null, { success: true, students: [] });
         }
       }
     });
   });
-}
+};
 
 module.exports = {
   getAllUniStudents, addUniStudentProfile, addHighschoolStudentProfile

@@ -36,6 +36,7 @@ router.get('/getUniversities', (req, res) => {
     // Gå igenom varje universitet och bygg fullständig bildsökväg
     universities.universities.forEach(university => {
       university.imagePath = imageFolder + university.imagePath;
+      university.website = "test.se"
     });
 
     
